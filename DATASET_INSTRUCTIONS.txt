@@ -1,0 +1,51 @@
+# IMPORTANT: Download the Dataset
+
+This project requires the **Pima Indians Diabetes Dataset**.
+
+## Where to Download:
+
+### Option 1: Kaggle (Recommended)
+1. Visit: https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database
+2. Click "Download"
+3. Extract and rename the file to `diabetes.csv`
+4. Place it in this project folder
+
+### Option 2: UCI Machine Learning Repository
+1. Visit: https://archive.ics.uci.edu/ml/datasets/pima+indians+diabetes
+2. Download the dataset
+3. Save as `diabetes.csv` in this folder
+
+## Dataset Format:
+
+The CSV file should have these columns (in order):
+1. Pregnancies
+2. Glucose
+3. BloodPressure
+4. SkinThickness
+5. Insulin
+6. BMI
+7. DiabetesPedigreeFunction
+8. Age
+9. Outcome
+
+## Sample Data (First 5 rows):
+
+```
+Pregnancies,Glucose,BloodPressure,SkinThickness,Insulin,BMI,DiabetesPedigreeFunction,Age,Outcome
+6,148,72,35,0,33.6,0.627,50,1
+1,85,66,29,0,26.6,0.351,31,0
+8,183,64,0,0,23.3,0.672,32,1
+1,89,66,23,94,28.1,0.167,21,0
+0,137,40,35,168,43.1,2.288,33,1
+```
+
+## After Downloading:
+
+1. Make sure the file is named exactly: `diabetes.csv`
+2. Place it in the same folder as `model.py` and `app.py`
+3. Run: `python model.py` to train the models
+4. Then run: `python app.py` to start the web application
+
+---
+
+**Note:** Without this dataset file, the model training will fail with a "File not found" error.

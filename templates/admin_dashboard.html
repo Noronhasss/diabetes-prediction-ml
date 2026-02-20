@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Diabetes Prediction System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container admin-dashboard">
+    <!-- Admin Header -->
+    <div class="dashboard-header admin-header">
+        <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+        <p>Manage users and view all system reports</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_users }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-file-medical"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_reports }}</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.diabetes_cases }}</div>
+                <div class="stat-label">Diabetes Cases</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.normal_cases }}</div>
+                <div class="stat-label">Normal Cases</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="tab-btn active" onclick="showTab('users')">
+            <i class="fas fa-users"></i> User Management
+        </button>
+        <button class="tab-btn" onclick="showTab('reports')">
+            <i class="fas fa-chart-bar"></i> All Reports
+        </button>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="users-tab" class="tab-content active">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-users-cog"></i> Manage Users</h2>
+                <p>Total: {{ users|length }} users</p>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                                {% if user.id == session.user_id %}
+                                <span class="badge-you">You</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="badge badge-admin">Admin</span>
+                                {% else %}
+                                <span class="badge badge-user">User</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at }}</td>
+                            <td>
+                                {% if user.id != session.user_id %}
+                                <form method="POST" 
+                                      action="{{ url_for('admin_delete_user', user_id=user.id) }}" 
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Are you sure you want to delete user \'{{ user.username }}\'? This will also delete all their reports.');">
+                                    <button type="submit" class="btn btn-danger btn-small">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">Cannot delete self</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div id="reports-tab" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-clipboard-list"></i> All Prediction Reports</h2>
+                <p>Total: {{ reports|length }} reports</p>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Glucose</th>
+                            <th>BMI</th>
+                            <th>Age</th>
+                            <th>Result</th>
+                            <th>Probability</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.id }}</td>
+                            <td>{{ report.username }}</td>
+                            <td>{{ report.glucose }} mg/dL</td>
+                            <td>{{ report.bmi }}</td>
+                            <td>{{ report.age }}</td>
+                            <td>
+                                {% if 'Diabetes Detected' in report.prediction_result %}
+                                <span class="badge badge-danger">{{ report.prediction_result }}</span>
+                                {% else %}
+                                <span class="badge badge-success">{{ report.prediction_result }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f"|format(report.probability) }}%</td>
+                            <td>{{ report.timestamp }}</td>
+                            <td>
+                                <button class="btn btn-info btn-small" onclick="viewReportDetails({{ report.id }})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <form method="POST" 
+                                      action="{{ url_for('admin_delete_report', report_id=report.id) }}" 
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Delete this report?');">
+                                    <button type="submit" class="btn btn-danger btn-small">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Details Modal -->
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <h2><i class="fas fa-file-medical-alt"></i> Report Details</h2>
+        <div id="reportDetails"></div>
+    </div>
+</div>
+
+<script>
+    // Tab switching
+    function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected tab
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // View report details (would populate from data in real implementation)
+    function viewReportDetails(reportId) {
+        const reports = {{ reports|tojson }};
+        const report = reports.find(r => r.id === reportId);
+        
+        if (report) {
+            const detailsHtml = `
+                <div class="report-details-grid">
+                    <div class="detail-item"><strong>Report ID:</strong> ${report.id}</div>
+                    <div class="detail-item"><strong>User:</strong> ${report.username}</div>
+                    <div class="detail-item"><strong>Email:</strong> ${report.email}</div>
+                    <div class="detail-item"><strong>Pregnancies:</strong> ${report.pregnancies}</div>
+                    <div class="detail-item"><strong>Glucose:</strong> ${report.glucose} mg/dL</div>
+                    <div class="detail-item"><strong>Blood Pressure:</strong> ${report.blood_pressure} mm Hg</div>
+                    <div class="detail-item"><strong>Skin Thickness:</strong> ${report.skin_thickness} mm</div>
+                    <div class="detail-item"><strong>Insulin:</strong> ${report.insulin} μU/mL</div>
+                    <div class="detail-item"><strong>BMI:</strong> ${report.bmi}</div>
+                    <div class="detail-item"><strong>DPF:</strong> ${report.diabetes_pedigree_function.toFixed(3)}</div>
+                    <div class="detail-item"><strong>Age:</strong> ${report.age} years</div>
+                    <div class="detail-item"><strong>Result:</strong> <span class="${report.prediction_result.includes('Diabetes Detected') ? 'text-danger' : 'text-success'}">${report.prediction_result}</span></div>
+                    <div class="detail-item"><strong>Confidence:</strong> ${report.probability.toFixed(2)}%</div>
+                    <div class="detail-item"><strong>Date:</strong> ${report.timestamp}</div>
+                </div>
+            `;
+            document.getElementById('reportDetails').innerHTML = detailsHtml;
+            document.getElementById('reportModal').style.display = 'block';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('reportModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('reportModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

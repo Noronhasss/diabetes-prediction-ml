@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction System</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">🩺 Diabetes Prediction System</h1>
+                <p class="subtitle">Predicting Diabetes Progression Using Machine Learning</p>
+                <div class="divider"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Information Box -->
+            <div class="info-box">
+                <h3>📊 About This System</h3>
+                <p>This system uses Machine Learning algorithms to predict the likelihood of diabetes based on medical diagnostic measurements. Please enter the patient's information below to get a prediction.</p>
+            </div>
+
+            <!-- Input Form Section -->
+            <div class="form-container">
+                <h2 class="form-title">Patient Information</h2>
+                
+                <form action="/predict" method="POST" class="prediction-form">
+                    <!-- Row 1: Pregnancies and Glucose -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pregnancies">
+                                <span class="label-text">Pregnancies</span>
+                                <span class="label-info">Number of times pregnant</span>
+                            </label>
+                            <input type="number" id="pregnancies" name="pregnancies" 
+                                   placeholder="e.g., 2" min="0" max="20" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="glucose">
+                                <span class="label-text">Glucose Level</span>
+                                <span class="label-info">Plasma glucose (mg/dL)</span>
+                            </label>
+                            <input type="number" id="glucose" name="glucose" 
+                                   placeholder="e.g., 120" min="0" max="300" step="1" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Blood Pressure and Skin Thickness -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="blood_pressure">
+                                <span class="label-text">Blood Pressure</span>
+                                <span class="label-info">Diastolic BP (mm Hg)</span>
+                            </label>
+                            <input type="number" id="blood_pressure" name="blood_pressure" 
+                                   placeholder="e.g., 70" min="0" max="200" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="skin_thickness">
+                                <span class="label-text">Skin Thickness</span>
+                                <span class="label-info">Triceps skin fold (mm)</span>
+                            </label>
+                            <input type="number" id="skin_thickness" name="skin_thickness" 
+                                   placeholder="e.g., 20" min="0" max="100" step="1" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Insulin and BMI -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="insulin">
+                                <span class="label-text">Insulin Level</span>
+                                <span class="label-info">2-Hour serum insulin (μU/mL)</span>
+                            </label>
+                            <input type="number" id="insulin" name="insulin" 
+                                   placeholder="e.g., 80" min="0" max="900" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bmi">
+                                <span class="label-text">BMI</span>
+                                <span class="label-info">Body Mass Index (kg/m²)</span>
+                            </label>
+                            <input type="number" id="bmi" name="bmi" 
+                                   placeholder="e.g., 25.5" min="0" max="70" step="0.1" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Diabetes Pedigree Function and Age -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="diabetes_pedigree">
+                                <span class="label-text">Diabetes Pedigree Function</span>
+                                <span class="label-info">Family history score (0.0-2.5)</span>
+                            </label>
+                            <input type="number" id="diabetes_pedigree" name="diabetes_pedigree" 
+                                   placeholder="e.g., 0.5" min="0" max="3" step="0.001" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="age">
+                                <span class="label-text">Age</span>
+                                <span class="label-info">Age in years</span>
+                            </label>
+                            <input type="number" id="age" name="age" 
+                                   placeholder="e.g., 30" min="1" max="120" step="1" required>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="button-container">
+                        <button type="submit" class="submit-btn">
+                            <span>🔍 Predict Diabetes</span>
+                        </button>
+                        <button type="reset" class="reset-btn">
+                            <span>🔄 Clear Form</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Prediction Result Section -->
+            {% if show_result %}
+            <div class="result-container {{ result_class }}">
+                <div class="result-header">
+                    <h2>Prediction Result</h2>
+                </div>
+                
+                <div class="result-content">
+                    {% if error_message %}
+                        <div class="error-message">
+                            <p>{{ error_message }}</p>
+                        </div>
+                    {% else %}
+                        <div class="result-main">
+                            <div class="result-icon">
+                                {% if result_class == 'positive' %}
+                                    ⚠️
+                                {% else %}
+                                    ✅
+                                {% endif %}
+                            </div>
+                            <h3 class="result-text">{{ prediction_text }}</h3>
+                        </div>
+                        
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Confidence Level:</span>
+                                <span class="detail-value">{{ probability }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Risk Assessment:</span>
+                                <span class="detail-value">{{ risk_level }}</span>
+                            </div>
+                        </div>
+
+                        <div class="result-info">
+                            {% if result_class == 'positive' %}
+                                <p><strong>⚠️ Important:</strong> This prediction indicates a higher likelihood of diabetes. Please consult with a healthcare professional for proper diagnosis and treatment.</p>
+                            {% else %}
+                                <p><strong>✅ Good News:</strong> This prediction indicates a lower likelihood of diabetes. However, maintain a healthy lifestyle and regular check-ups.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="result-actions">
+                            <a href="/" class="action-btn">🔄 New Prediction</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>© 2026 Diabetes Prediction System | Machine Learning Project</p>
+                <p class="disclaimer">⚠️ Disclaimer: This is a machine learning prediction tool for educational purposes. Always consult healthcare professionals for medical advice.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Simple JavaScript for form validation and UX -->
+    <script>
+        // Smooth scroll to result
+        {% if show_result %}
+        window.onload = function() {
+            const resultContainer = document.querySelector('.result-container');
+            if (resultContainer) {
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+        {% endif %}
+
+        // Form validation feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.prediction-form');
+            const inputs = form.querySelectorAll('input[type="number"]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value && this.checkValidity()) {
+                        this.style.borderColor = '#4CAF50';
+                    } else if (this.value) {
+                        this.style.borderColor = '#f44336';
+                    } else {
+                        this.style.borderColor = '#ddd';
+                    }
+                });
+            });
+
+            // Reset button handler
+            const resetBtn = document.querySelector('.reset-btn');
+            resetBtn.addEventListener('click', function() {
+                inputs.forEach(input => {
+                    input.style.borderColor = '#ddd';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

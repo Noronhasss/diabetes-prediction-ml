@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Diabetes Prediction System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+        <h1><i class="fas fa-stethoscope"></i> Welcome, {{ username }}!</h1>
+        <p>Enter your health metrics to predict diabetes risk</p>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Prediction Form Card -->
+        <div class="card prediction-card">
+            <div class="card-header">
+                <h2><i class="fas fa-edit"></i> Enter Health Data</h2>
+                <p>Fill in all fields for accurate prediction</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('predict') }}" class="prediction-form" id="predictionForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pregnancies">
+                            <i class="fas fa-baby"></i> Pregnancies
+                        </label>
+                        <input type="number" 
+                               id="pregnancies" 
+                               name="pregnancies" 
+                               class="form-control" 
+                               min="0" 
+                               max="20" 
+                               value="0"
+                               required>
+                        <small>Number of times pregnant</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="glucose">
+                            <i class="fas fa-vial"></i> Glucose Level
+                        </label>
+                        <input type="number" 
+                               id="glucose" 
+                               name="glucose" 
+                               class="form-control" 
+                               min="0" 
+                               max="300" 
+                               value="120"
+                               required>
+                        <small>Plasma glucose (mg/dL)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="blood_pressure">
+                            <i class="fas fa-heartbeat"></i> Blood Pressure
+                        </label>
+                        <input type="number" 
+                               id="blood_pressure" 
+                               name="blood_pressure" 
+                               class="form-control" 
+                               min="0" 
+                               max="200" 
+                               value="70"
+                               required>
+                        <small>Diastolic BP (mm Hg)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skin_thickness">
+                            <i class="fas fa-hand-paper"></i> Skin Thickness
+                        </label>
+                        <input type="number" 
+                               id="skin_thickness" 
+                               name="skin_thickness" 
+                               class="form-control" 
+                               min="0" 
+                               max="100" 
+                               value="20"
+                               required>
+                        <small>Triceps skin fold (mm)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="insulin">
+                            <i class="fas fa-syringe"></i> Insulin
+                        </label>
+                        <input type="number" 
+                               id="insulin" 
+                               name="insulin" 
+                               class="form-control" 
+                               min="0" 
+                               max="900" 
+                               value="80"
+                               required>
+                        <small>2-Hour serum insulin (μU/mL)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bmi">
+                            <i class="fas fa-weight"></i> BMI
+                        </label>
+                        <input type="number" 
+                               id="bmi" 
+                               name="bmi" 
+                               class="form-control" 
+                               min="0" 
+                               max="70" 
+                               step="0.1" 
+                               value="25.0"
+                               required>
+                        <small>Body Mass Index (kg/m²)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="diabetes_pedigree_function">
+                            <i class="fas fa-dna"></i> Diabetes Pedigree Function
+                        </label>
+                        <input type="number" 
+                               id="diabetes_pedigree_function" 
+                               name="diabetes_pedigree_function" 
+                               class="form-control" 
+                               min="0" 
+                               max="3" 
+                               step="0.001" 
+                               value="0.5"
+                               required>
+                        <small>Genetic diabetes function</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">
+                            <i class="fas fa-calendar-alt"></i> Age
+                        </label>
+                        <input type="number" 
+                               id="age" 
+                               name="age" 
+                               class="form-control" 
+                               min="1" 
+                               max="120" 
+                               value="30"
+                               required>
+                        <small>Age in years</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-magic"></i> Predict Diabetes
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Prediction History Card -->
+        <div class="card history-card">
+            <div class="card-header">
+                <h2><i class="fas fa-history"></i> Prediction History</h2>
+                <p>Your past {{ reports|length }} prediction(s)</p>
+            </div>
+
+            <div class="history-list">
+                {% if reports %}
+                    {% for report in reports %}
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="history-date">
+                                <i class="fas fa-clock"></i> 
+                                {{ report.timestamp }}
+                            </span>
+                            <span class="history-result {{ 'result-positive' if 'Diabetes Detected' in report.prediction_result else 'result-negative' }}">
+                                {{ report.prediction_result }}
+                            </span>
+                        </div>
+                        <div class="history-details">
+                            <div class="detail-item">
+                                <strong>Confidence:</strong> {{ "%.2f"|format(report.probability) }}%
+                            </div>
+                            <div class="detail-item">
+                                <strong>Glucose:</strong> {{ report.glucose }} mg/dL
+                            </div>
+                            <div class="detail-item">
+                                <strong>BMI:</strong> {{ report.bmi }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Age:</strong> {{ report.age }} years
+                            </div>
+                        </div>
+                        <button class="btn-expand" onclick="toggleDetails(this)">
+                            <i class="fas fa-chevron-down"></i> View Full Details
+                        </button>
+                        <div class="full-details" style="display: none;">
+                            <div class="detail-grid">
+                                <div><strong>Pregnancies:</strong> {{ report.pregnancies }}</div>
+                                <div><strong>Blood Pressure:</strong> {{ report.blood_pressure }} mm Hg</div>
+                                <div><strong>Skin Thickness:</strong> {{ report.skin_thickness }} mm</div>
+                                <div><strong>Insulin:</strong> {{ report.insulin }} μU/mL</div>
+                                <div><strong>DPF:</strong> {{ "%.3f"|format(report.diabetes_pedigree_function) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No predictions yet</p>
+                        <small>Fill out the form to make your first prediction</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleDetails(button) {
+        const details = button.nextElementSibling;
+        const icon = button.querySelector('i');
+        
+        if (details.style.display === 'none') {
+            details.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Details';
+        } else {
+            details.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            button.innerHTML = '<i class="fas fa-chevron-down"></i> View Full Details';
+        }
+    }
+</script>
+{% endblock %}
